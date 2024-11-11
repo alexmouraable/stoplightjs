@@ -10,36 +10,27 @@
 
 var stoplight = {};
 
-stoplight.element = (function() {
-    const displayProperty = "display";
-
-    function show(element) {
-        element.style[displayProperty] = "block";
-    }
-
-    function hide(element) {
-        element.style[displayProperty] = "none";
-    }
-
-    return {
-        show,
-        hide
-    };
-}());
-
 stoplight.backdrop = (function() {
     const htmlElement = document.documentElement,
-        overflowyProperty = "overflowY",
-        backdrop = document.querySelector(".js-stoplight-backdrop");
+        bodyElement = document.body,
+        backdrop = document.createElement("div"),
+        backdropClassName = "stoplight-backdrop",
+        backdropVisibleClassName = `${backdropClassName}--visible`;
+
+    backdrop.className = backdropClassName;
+
+    bodyElement.appendChild(backdrop);
 
     function show() {
-        htmlElement.style[overflowyProperty] = "hidden";
-        stoplight.element.show(backdrop);
+        htmlElement.style.overflowY = "hidden";
+
+        backdrop.classList.add(backdropVisibleClassName);
     }
 
     function hide() {
-        stoplight.element.hide(backdrop);
-        htmlElement.style[overflowyProperty] = "auto";
+        htmlElement.style.overflowY = "auto";
+
+        backdrop.classList.remove(backdropVisibleClassName);
     }
 
     return {
@@ -48,86 +39,85 @@ stoplight.backdrop = (function() {
     };
 }());
 
-stoplight.nothing = function() {};
+stoplight.tour = function(headerHeightInPixels = 0) {
+    const initialStepContainerNumber = 1,
+        initialStepContainer = getStepContainerByNumber(initialStepNumber),
+        stepClassName = "stoplight-step",
+        overlayClassName = "stoplight-overlay",
+        dialogVisibleClassName = "stoplight-dialog--visible";
 
-stoplight.tour = function({
-    headerHeightInPixels = 0,
-    stepCssSelector = ".js-stoplight-step",
-    onFinished = stoplight.nothing
-}) {
-    const initialStepNumber = 1,
-        initialStep = getStepByNumber(initialStepNumber),
-        stepInnerCssSelector = ".js-stoplight-step-inner",
-        stepContentCssSelector = ".js-stoplight-step-content",
-        overlayClass = "stoplight-overlay",
-        stepInnerClass = "stoplight-step__inner",
-        stepContentClass = "stoplight-step__content";
-
-    let currentStepNumber = initialStepNumber,
-        currentStep = initialStep;
+    let currentStepContainerNumber = initialStepContainerNumber,
+        currentStepContainer = initialStepContainer;
 
     function start() {
         stoplight.backdrop.show();
-        showStep(initialStep);
+        showStepFromContainer(currentStepContainer);
     }
 
     function finish() {
-        hideStep(currentStep);
+        hideStepFromContainer(currentStepContainer);
         stoplight.backdrop.hide();
-        onFinished();
     }
 
     function nextStep() {
-        hideStep(currentStep);
+        hideStepFromContainer(currentStepContainer);
 
-        currentStepNumber += 1;
-        currentStep = getStepByNumber(currentStepNumber);
+        currentStepContainerNumber += 1;
+        currentStepContainer = getStepContainerByNumber(currentStepContainerNumber);
 
-        showStep(currentStep);
+        showStepFromContainer(currentStepContainer);
     }
 
     function previousStep() {
-        hideStep(currentStep);
+        hideStepFromContainer(currentStepContainer);
 
-        currentStepNumber -= 1;
-        currentStep = getStepByNumber(currentStepNumber);
+        currentStepContainerNumber -= 1;
+        currentStepContainer = getStepContainerByNumber(currentStepContainerNumber);
 
-        showStep(currentStep);
+        showStepFromContainer(currentStepContainer);
     }
 
-    function getStepByNumber(number) {
-        const stepByNumberCssSelector = `
-            ${stepCssSelector}[data-stoplight-step="${number}"]
+    function getStepContainerByNumber(number) {
+        const stepContainerCssSelector = `
+            .js-stoplight-step-container[data-stoplight-step="${number}"]
         `;
         
-        return document.querySelector(stepByNumberCssSelector);
+        return document.querySelector(stepContainerCssSelector);
     }
 
-    function showStep(step) {
-        const stepInner = step.querySelector(stepInnerCssSelector),
-            stepContent = step.querySelector(stepContentCssSelector),
-            overlay = document.createElement("div");
+    function showStepFromContainer(stepContainer) {
+        const step = getStepFromContainer(stepContainer),
+            overlay = document.createElement("div"),
+            dialog = getDialogFromContainer(stepContainer);
 
-        overlay.className = overlayClass;
-        
-        stepInner.appendChild(overlay);
-        stepInner.classList.add(stepInnerClass);
+        overlay.className = overlayClassName;
 
-        stepContent.classList.add(stepContentClass);
+        step.appendChild(overlay);
+        step.classList.add(stepClassName);
+
+        dialog.classList.add(dialogVisibleClassName);
 
         goToStep(step);
     }
 
-    function hideStep(step) {
-        const stepInner = step.querySelector(stepInnerCssSelector),
-            stepContent = step.querySelector(stepContentCssSelector),
-            overlay = step.querySelector(`.${overlayClass}`);
+    function hideStepFromContainer(stepContainer) {
+        const step = getStepFromContainer(stepContainer),
+            overlay = step.querySelector(`.${overlayClassName}`),
+            dialog = getDialogFromContainer(stepContainer);
 
         overlay.remove();
 
-        stepInner.classList.remove(stepInnerClass);
+        step.classList.remove(stepClassName);
 
-        stepContent.classList.remove(stepContentClass);
+        dialog.classList.remove(dialogVisibleClassName);
+    }
+    
+    function getStepFromContainer(stepContainer) {
+        return stepContainer.querySelector(".js-stoplight-step");
+    }
+
+    function getDialogFromContainer(stepContainer) {
+        return stepContainer.querySelector(".js-stoplight-dialog");
     }
 
     function goToStep(step) {
@@ -139,23 +129,10 @@ stoplight.tour = function({
         });
     }
 
-    document.querySelectorAll(".js-stoplight-start-tour-button")
-        .forEach(startTourButton => {
-            startTourButton.addEventListener("click", start);
-        });
-
-    document.querySelectorAll(".js-stoplight-next-step-button")
-        .forEach(nextStepButton => {
-            nextStepButton.addEventListener("click", nextStep);
-        });
-
-    document.querySelectorAll(".js-stoplight-previous-step-button")
-        .forEach(previousStepButton => {
-            previousStepButton.addEventListener("click", previousStep);
-        });
-
-    document.querySelectorAll(".js-stoplight-finish-tour-button")
-        .forEach(finishTourButton => {
-            finishTourButton.addEventListener("click", finish);
-        });
+    return {
+        start,
+        finish,
+        nextStep,
+        previousStep
+    };
 };

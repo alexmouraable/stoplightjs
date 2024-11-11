@@ -1,23 +1,23 @@
-.stoplight-step {}
-
-.stoplight-step__inner {
+.stoplight-step {
     background-color: #FFF;
     border-radius: 4px;
-    padding: 8px;
+    padding: 4px;
     position: relative;
     z-index: 10001;
 }
 
-.stoplight-step__content {
+.stoplight-dialog {
     background-color: #FFF;
     border-radius: 4px;
+    display: none;
     padding: 12px;
     position: relative;
+    top: 12px;
     z-index: 10001;
 }
 
-.stoplight-step__content--bottom {
-    margin-top: 12px;
+.stoplight-dialog--visible {
+    display: inline-block;
 }
 
 .stoplight-overlay {
@@ -27,8 +27,13 @@
 
 .stoplight-backdrop {
     background-color: #000;
+    display: none;
     inset: 0;
     opacity: .5;
     position: fixed;
     z-index: 10000;
+}
+
+.stoplight-backdrop--visible {
+    display: block;
 }
