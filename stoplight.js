@@ -41,10 +41,12 @@ stoplight.backdrop = (function() {
 
 stoplight.tour = function(headerHeightInPixels = 0) {
     const initialStepContainerNumber = 1,
-        initialStepContainer = getStepContainerByNumber(initialStepNumber),
+        initialStepContainer = getStepContainerByNumber(initialStepContainerNumber),
+        stepContainerCssSelector = ".js-stoplight-step-container",
         stepClassName = "stoplight-step",
         overlayClassName = "stoplight-overlay",
-        dialogVisibleClassName = "stoplight-dialog--visible";
+        dialogVisibleClassName = "stoplight-dialog--visible",
+        stepCount = document.querySelectorAll(stepContainerCssSelector).length;
 
     let currentStepContainerNumber = initialStepContainerNumber,
         currentStepContainer = initialStepContainer;
@@ -78,11 +80,11 @@ stoplight.tour = function(headerHeightInPixels = 0) {
     }
 
     function getStepContainerByNumber(number) {
-        const stepContainerCssSelector = `
-            .js-stoplight-step-container[data-stoplight-step="${number}"]
+        const stepContainerByNumberCssSelector = `
+            ${stepContainerCssSelector}[data-stoplight-step="${number}"]
         `;
         
-        return document.querySelector(stepContainerCssSelector);
+        return document.querySelector(stepContainerByNumberCssSelector);
     }
 
     function showStepFromContainer(stepContainer) {
@@ -133,6 +135,8 @@ stoplight.tour = function(headerHeightInPixels = 0) {
         start,
         finish,
         nextStep,
-        previousStep
+        previousStep,
+        currentStep: initialStepContainerNumber,
+        stepCount
     };
 };
