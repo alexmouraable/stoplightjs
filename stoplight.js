@@ -41,8 +41,8 @@ stoplight.backdrop = (function() {
 
 stoplight.tour = function(headerHeightInPixels = 0) {
     const initialStepContainerNumber = 1,
-        initialStepContainer = getStepContainerByNumber(initialStepContainerNumber),
         stepContainerCssSelector = ".js-stoplight-step-container",
+        initialStepContainer = getStepContainerByNumber(initialStepContainerNumber),
         stepClassName = "stoplight-step",
         overlayClassName = "stoplight-overlay",
         dialogVisibleClassName = "stoplight-dialog--visible",
